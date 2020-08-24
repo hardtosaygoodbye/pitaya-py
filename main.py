@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 @app.route('/hello')
 def hello():
-    res = db.execute("select * from one_day")
+    res = db.select("select * from one_day")
     return {
         'code': 0,
         'msg': 'success',
@@ -24,8 +24,7 @@ def gettodayhalfhour():
     timeStamp = str(timeStamp)
     # 是不是不能这么写
     sql_sentance = sql_sentance + timeStamp
-    gold_price_database = db.execute(sql_sentance)
-
+    gold_price_database = db.select(sql_sentance)
     return {
         'code': 0,
         'msg': 'success',
@@ -51,7 +50,7 @@ def get_data():
     data_get_time = str(get_start_time)
     # 是不是不能这么写
     sql_sentance = sql_sentance + data_get_time
-    gold_price_database = db.execute(sql_sentance)
+    gold_price_database = db.select(sql_sentance)
     price_ts_new = gold_price_response.get("t")
     price_open_new = gold_price_response.get("o")
     price_close_new = gold_price_response.get("c")
@@ -63,13 +62,15 @@ def get_data():
         price_ts_new_list.append(price_ts.get("ts"))
 
     if not gold_price_database :
-     insert_sql = "INSERT INTO one_day_test(ts, open_price, close_price, high_price, low_price,check_time) VALUES (%s, %s, %s, %s, %s, %s)"
+     insert_sql = '''
+        INSERT INTO one_day_test(ts, open_price, close_price, high_price, low_price,check_time) VALUES (%s, %s, %s, %s, %s, %s)
+     '''
      insert_list = []
      for i in range(len(price_ts_new)) :  
       price_check_time_new = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(price_ts_new[i]-28800))
       insert_element = (price_ts_new[i]-28800,price_open_new[i],price_close_new[i],price_high_new[i],price_low_new[i],price_check_time)
       insert_list.append(insert_element)
-     cursor = db.executeDay(insert_sql,insert_list) 
+      db.execute(insert_sql,insert_list) 
     else :
      for old in gold_price_database :       
       for new_index in range(len(price_ts_new)) :
@@ -77,7 +78,7 @@ def get_data():
             insert_sql = "INSERT INTO one_day_test(ts, open_price, close_price, high_price, low_price,check_time) VALUES (%s, %s, %s, %s, %s, %s)"
             price_check_time_new = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(price_ts_new[new_index]-28800))
             insert_list = (price_ts_new[new_index]-28800,price_open_new[new_index],price_close_new[new_index],price_high_new[new_index],price_low_new[new_index],price_check_time_new)
-            cursor = db.execute_one(insert_sql,insert_list) 
+            db.execute(insert_sql,insert_list) 
             break
         if old.get("ts") == price_ts_new[new_index]-28800:
             if float(old.get("open_price")) != price_open_new[new_index] or float(old.get("close_price")) != price_close_new[new_index] or float(old.get("high_price")) != price_high_new[new_index] or float(old.get("low_price")) != price_low_new[new_index] :
@@ -88,8 +89,7 @@ def get_data():
          insert_sql_different = "UPDATE one_day_test SET open_price = %s, close_price = %s, high_price = %s, low_price = %s, check_time = %s WHERE ts = %s"
          price_check_time_new = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(price_ts_new[insert_index]-28800))
          insert_list_different = (price_open_new[insert_index],price_close_new[insert_index],price_high_new[insert_index],price_low_new[insert_index],price_check_time_new,price_ts_new[insert_index]-28800)
-         cursor = db.execute_one(insert_sql_different,insert_list_different) 
-     
+         db.execute(insert_sql_different,insert_list_different)
     return "ok"
 
 if __name__ == '__main__':

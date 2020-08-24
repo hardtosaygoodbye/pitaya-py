@@ -1,18 +1,18 @@
 import pymysql
 
-db = pymysql.connect("118.25.210.52","rocky","bw3yGf33x22yjiZt","pitaya")
-cursor = db.cursor(pymysql.cursors.DictCursor)
+connection = pymysql.connect("118.25.210.52","rocky","bw3yGf33x22yjiZt","pitaya")
+cursor = connection.cursor(pymysql.cursors.DictCursor)
 
-def execute(sql):
-    cursor.execute(sql)
+# 查询
+def select(sql, args=None):
+    cursor.execute(sql, args)
     return cursor.fetchall()
 
-def executeDay(sql,args_list):
-    cursor.executemany(sql,args_list)
-    db.commit()
-    return True
-    
-def execute_one(sql,value):
-    cursor.execute(sql,value)
-    db.commit()
-    return True  
+# 增删改
+def execute(sql, args=None):
+    if type(args) is list:
+        cursor.executemany(sql, args)
+        connection.commit()
+    elif type(args) is tuple or type(args) is None:
+        cursor.execute(sql, args)
+        connection.commit()
