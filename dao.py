@@ -4,7 +4,7 @@ import time
 
 # 查找日线数据
 def select_one_day(from_t, to_t):
-    res = db.select('select * from one_day where ts between %d and %d;', (from_t, to_t))
+    res = db.select('select * from one_day where ts between %s and %s;', (from_t, to_t))
     return res
 
 # 更改日线数据
@@ -16,7 +16,7 @@ def update_one_day(t, o, c, h, l):
 # 增加日线数据
 def insert_one_day(t, o, c, h, l):
     db.execute('''
-        INSERT INTO one_day (ts, open_price, close_price, high_price, low_price) VALUES (%s, %s, %s, %s, %s, %s)
+        INSERT INTO one_day (ts, open_price, close_price, high_price, low_price) VALUES (%s, %s, %s, %s, %s)
     ''', (t, o, c, h, l))
 
 # 获取网络最新日线数据
@@ -34,6 +34,8 @@ def request_latest_one_day():
             'to': to_t
         }
     ).json()
+    for i in range(len(res['t'])) :
+        res['t'][i] = res['t'][i] - 28800
     return res
 
 # 查找半小时数据
