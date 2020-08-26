@@ -34,17 +34,46 @@ def request_latest_one_day():
             'to': to_t
         }
     ).json()
-    for i in range(len(res['t'])) :
-        res['t'][i] = res['t'][i] - 28800
-    return res
+    return correct_time_stamp(res)
 
 # 查找半小时数据
+def select_half_hour(from_t, to_t):
+    res = db.select('select * from half_hour where ts between %s and %s;', (from_t, to_t))
+    return res
 
 # 更改半小时数据
+def update_half_hour(t,o,c,h,l):
+    db.execute('''
+        UPDATE half_hour SET open_price = %s, close_price = %s, high_price = %s, low_price = %s WHERE ts = %s
+    ''',(o, c, h, l, t))
 
 # 增加半小时数据
+def insert_half_hour(t,o,c,h,l):
+    db.execute('''
+        INSERT INTO half_hour (ts, open_price, close_price, high_price, low_price) VALUES (%s, %s, %s, %s, %s)
+    ''',(t, o, c, h, l))
 
 # 获取网络最新半小时数据
+def request_latest_half_hour():
+    from_t = int(time.time()) - 259200
+    to_t = int(time.time())
+    res = requests.get(
+        'https://tradingview.2rich.net/TradingInterface/history/',
+        headers = {'Referer': '1'},
+        params = {
+            'symbol':'FEAUUS',
+            'resolution': '30',
+            'from': from_t,
+            'to': to_t
+        }
+    ).json()
+    return correct_time_stamp(res)
+
+# 处理时间戳偏差
+def correct_time_stamp(net_data):
+    for i in range(len(net_data['t'])) :
+        net_data['t'][i] = net_data['t'][i] - 28800
+    return net_data    
 
 # 获取当前时间戳所在一天的半小时数据
 
