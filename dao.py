@@ -1,6 +1,7 @@
 import db
 import requests
 import time
+import ts
 
 # 查找日线数据
 def select_one_day(from_t, to_t):
@@ -76,9 +77,16 @@ def correct_time_stamp(net_data):
     return net_data    
 
 # 获取当前时间戳所在一天的半小时数据
+def select_half_hour_today():
+    from_t = ts.today_begin()
+    to_t = ts.now()
+    res = db.select('select * from half_hour where ts between %s and %s;', (from_t, to_t))
+    return res
+
 
 # 想验证代码，直接python dao.py就会执行到这里，不用特地写个接口
 # dao层所有时间参数都用时间戳
 # 数据库字段和别人数据库保持一致吧，否则也容易乱掉，直接t,o,c,h,l五个字段，写变量名的时候也好写，new_t, tmp_t, xxx_o
 if __name__ == '__main__':
     request_latest_one_day()
+    select_half_hour_today()
