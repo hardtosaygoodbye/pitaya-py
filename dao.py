@@ -1,10 +1,16 @@
 import db
 import requests
 import time
+import ts
 
 # 查找日线数据
 def select_one_day(from_t, to_t):
     res = db.select('select * from one_day where t between %s and %s;', (from_t, to_t))
+    return res
+
+# 获取所有日线数据
+def select_all_one_day():
+    res = db.select('select * from one_day')
     return res
 
 # 更改日线数据
@@ -72,11 +78,14 @@ def request_latest_half_hour():
 def correct_time_stamp(net_data):
     for i in range(len(net_data['t'])) :
         net_data['t'][i] = net_data['t'][i] - 28800
-    return net_data    
+    return net_data
 
 # 获取当前时间戳所在一天的半小时数据
-
-
+def select_half_hour_in_day(t):
+    res = ts.ts_in_day_range(t)
+    from_t = res[0]
+    to_t = res[1]
+    return select_half_hour(from_t, to_t)
 
 if __name__ == '__main__':
     request_latest_one_day()
